@@ -41,6 +41,23 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html')
 });
 
+app.post('/api/users', (req, res) => {
+  let username = req.body.username;
+  if( username == "") {
+    res.json({"error": "invalid username"})
+    return
+  }
+
+  let newUser = new User({"username": username});
+  newUser.save()
+  .then(data => {
+    res.json(data.getData())
+  })
+  .catch(err => {
+    res.json({"error": "invalid username"})
+  })
+})
+
 
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port)
