@@ -92,6 +92,46 @@ app.post('/api/users/:id/exercises', (req, res) => {
   })
 })
 
+app.get('/api/users/:id/logs', (req, res) => {
+  let limit = req.query.limit || 0;
+  let from = req.query.from || '1900-01-01'
+  let to = req.query.to || '3000-01-01'
+
+  User.findById(req.params.id)
+  .then(user => {
+    Exercise.countDocuments({username: user.username})
+    .then(count => {
+      Exercise.find({
+        username: user.username,
+        $or: [
+          {
+            date: {
+              $gte: from,
+              $lte: to
+            }
+          },
+          { date: { $exists: false }}
+        ]
+      })
+      .limit(limit)
+      .then(data => {
+        res.json({
+          username: user.username,
+          count: count,
+          _id: user._id.toString(),
+          log: data.map(e => ({
+            description: e.description,
+            duration: e.duration,
+            date: e.date?.toDateString()
+          }))
+        })
+      })
+    })
+  })
+  .catch(err => {
+    res.json({"error": err})
+  })})
+
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port)
 })
