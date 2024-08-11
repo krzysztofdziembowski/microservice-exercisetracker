@@ -65,6 +65,32 @@ app.get('/api/users', (req, res) => {
   })
 })
 
+app.post('/api/users/:id/exercises', (req, res) => {
+  User.findById(req.params.id)
+  .then(user => {
+    let exercise = new Exercise({
+      username: user.username,
+      description: req.body.description,
+      duration: req.body.duration,
+      date: req.body.date || new Date()
+    })
+
+    exercise.save()
+    .then(data => {
+      res.json({
+        username: user.username,
+        description: data.description,
+        duration: data.duration,
+        date: data.date?.toDateString(),
+        _id: user._id
+      })
+    })
+    
+  })
+  .catch(err => {
+    res.json({"error": err})
+  })
+})
 
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port)
